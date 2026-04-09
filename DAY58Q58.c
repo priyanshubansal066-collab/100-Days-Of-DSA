@@ -2,50 +2,66 @@
 #include <stdlib.h>
 
 struct Node {
-    int data;
+    char data;
     struct Node* left;
     struct Node* right;
 };
 
-struct Node* createNode(int val) {
-    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
-    newNode->data = val;
-    newNode->left = NULL;
-    newNode->right = NULL;
-    return newNode;
+int preIndex = 0;
+
+struct Node* newNode(char data) {
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+    node->data = data;
+    node->left = node->right = NULL;
+    return node;
 }
 
-int findIndex(int inorder[], int start, int end, int val) {
-    for(int i = start; i <= end; i++) {
-        if(inorder[i] == val)
+
+int search(char inorder[], int start, int end, char value) {
+    for (int i = start; i <= end; i++) {
+        if (inorder[i] == value)
             return i;
     }
     return -1;
 }
 
-struct Node* buildTree(int preorder[], int inorder[], int inStart, int inEnd, int* preIndex) {
-    if(inStart > inEnd)
+struct Node* buildTree(char inorder[], char preorder[], int start, int end) {
+    if (start > end)
         return NULL;
 
-    int rootVal = preorder[*preIndex];
-    (*preIndex)++;
-    struct Node* root = createNode(rootVal);
+    
+    char curr = preorder[preIndex++];
+    struct Node* node = newNode(curr);
 
-    if(inStart == inEnd)
-        return root;
+    if (start == end)
+        return node;
 
-    int inIndex = findIndex(inorder, inStart, inEnd, rootVal);
+    int inIndex = search(inorder, start, end, curr);
 
-    root->left = buildTree(preorder, inorder, inStart, inIndex - 1, preIndex);
-    root->right = buildTree(preorder, inorder, inIndex + 1, inEnd, preIndex);
+    node->left = buildTree(inorder, preorder, start, inIndex - 1);
+    node->right = buildTree(inorder, preorder, inIndex + 1, end);
 
-    return root;
+    return node;
 }
 
-void postorder(struct Node* root) {
-    if(root == NULL)
+
+void printInorder(struct Node* root) {
+    if (root == NULL)
         return;
-    postorder(root->left);
-    postorder(root->right);
-    printf("%d ", root->data);
+    printInorder(root->left);
+    printf("%c ", root->data);
+    printInorder(root->right);
+}
+
+int main() {
+    char inorder[] = {'D','B','E','A','F','C'};
+    char preorder[] = {'A','B','D','E','C','F'};
+    int n = 6;
+
+    struct Node* root = buildTree(inorder, preorder, 0, n - 1);
+
+    printf("Inorder traversal of constructed tree:\n");
+    printInorder(root);
+
+    return 0;
 }
